@@ -1,5 +1,6 @@
 import { fetchAPI } from "@/lib/strapi";
 import ProductClientPage from "@/components/products/ProductClientPage";
+import { Product } from '@/types/strapi';
 
 interface ProductPageProps {
   params: {
@@ -16,16 +17,16 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 
   // Извлекаем продукт, работая с "плоской" структурой
-  const product = Array.isArray(strapiResponse) ? strapiResponse[0] : null;
+  const product: Product | null = Array.isArray(strapiResponse) ? strapiResponse[0] : null;
 
   if (!product) {
-    return <div className="text-center py-20">Product with SKU '{sku}' not found.</div>;
+    return <div className="text-center py-20">Product with SKU &apos;{sku}&apos; not found.</div>;
   }
 
   // Готовим пропсы, БЕЗ .attributes
   const slugsForBreadcrumbs = [
-    product.categories?.data?.[0]?.name?.toLowerCase().replace(/\s+/g, "-") || "category",
-    product.sku
+    product.attributes.category?.data?.attributes?.name?.toLowerCase().replace(/\s+/g, "-") || "category",
+    product.attributes.sku
   ];
 
   // Рендерим клиентский компонент

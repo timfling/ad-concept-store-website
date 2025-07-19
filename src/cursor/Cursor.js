@@ -87,7 +87,7 @@ const CursorContainer = ({ debug }) => {
             // kill all current animations for the block and clear the props it has added
             gsap.killTweensOf(cursorRef.current);
         }
-    }, [selectedElement, status]);
+    }, [selectedElement, status, setStatus]);
 
 
     useEffect(() => {
@@ -125,7 +125,7 @@ const CursorContainer = ({ debug }) => {
                 }
             });
         }
-    }, [pos]);
+    }, [pos, status, selectedElement, setStatus]);
 
     if (selectedElement.el) {
         if (selectedElement.el.clientWidth > 0) { 

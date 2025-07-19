@@ -1,33 +1,17 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import { StrapiImage } from '@/types/strapi';
 
-export interface ProductGalleryImage {
-  id?: string | number;
-  attributes?: {
-    url: string;
-    alternativeText?: string;
-    [key: string]: any;
-  };
-  url?: string;
-  alternativeText?: string;
-  alt?: string;
-  [key: string]: any;
-}
-
-export interface ProductGalleryProps {
-  images: ProductGalleryImage[];
-}
-
-const getImageUrl = (img: ProductGalleryImage) => {
-  const url = img.attributes?.url || img.url;
+const getImageUrl = (img: StrapiImage) => {
+  const url = img.attributes?.url;
   if (!url) return "";
   return url.startsWith("http")
     ? url
     : `${process.env.NEXT_PUBLIC_STRAPI_API_URL?.replace(/\/api$/, "")}${url}`;
 };
 
-const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
+const ProductGallery: React.FC<{ images: StrapiImage[] }> = ({ images }) => {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const selectedImage = images[selectedIdx] || images[0];
 
@@ -38,7 +22,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
         {selectedImage ? (
           <Image
             src={getImageUrl(selectedImage)}
-            alt={selectedImage.alternativeText || selectedImage.alt || selectedImage.attributes?.alternativeText || 'Product image'}
+            alt={selectedImage.attributes?.name || 'Product image'}
             width={800}
             height={1200}
             className="w-full h-auto"
@@ -60,7 +44,7 @@ const ProductGallery: React.FC<ProductGalleryProps> = ({ images }) => {
           >
             <Image
               src={getImageUrl(img)}
-              alt={img.alternativeText || img.alt || img.attributes?.alternativeText || 'Product thumbnail'}
+              alt={img.attributes?.name || 'Product thumbnail'}
               fill
               className="object-cover"
               sizes="64px"

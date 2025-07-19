@@ -1,71 +1,35 @@
 import React from "react";
-
-export interface ProductInfoProduct {
-  id?: string | number;
-  title: string;
-  sku: string;
-  sizes?: {
-    data?: Array<{
-      id?: string | number;
-      size_mm?: string | number;
-      thickness_mm?: string | number;
-      [key: string]: any;
-    }>;
-  } | Array<any>;
-  collections?: {
-    data?: Array<{
-      id?: string | number;
-      name: string;
-      [key: string]: any;
-    }>;
-  } | Array<any>;
-  technical_info?: string;
-  categories?: {
-    data?: Array<{
-      id?: string | number;
-      name: string;
-      [key: string]: any;
-    }>;
-  } | Array<any>;
-  images?: any;
-  [key: string]: any;
-}
+import { Product } from '@/types/strapi';
 
 export interface ProductInfoProps {
-  product: ProductInfoProduct;
+  product: Product;
 }
 
-const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
-  // Support both { sizes: { data: [...] } } and { sizes: [...] }
-  const sizes = Array.isArray(product.sizes)
-    ? product.sizes
-    : product.sizes?.data || [];
-  // Gather unique thicknesses from sizes
+const ProductInfo: React.FC<{ product: Product }> = ({ product }) => {
+  const data = product.attributes;
+  const sizes = data.sizes?.data || [];
   const thicknessSet = new Set(
-    sizes.map((size: any) => size.thickness_mm).filter(Boolean)
+    sizes.map((size) => size.attributes?.thickness_mm).filter(Boolean)
   );
   const thicknesses = Array.from(thicknessSet);
-  // Support both { collections: { data: [...] } } and { collections: [...] }
-  const collections = Array.isArray(product.collections)
-    ? product.collections
-    : product.collections?.data || [];
-  const collection = collections[0]?.name || "";
-  const technicalInfo = product.technical_info || "";
+  const collections = data.collections?.data || [];
+  const collection = collections[0]?.attributes?.name || "";
+  const technicalInfo = data.technical_info || "";
 
   return (
     <div className="flex flex-col gap-6">
       {/* Title */}
-      <h1 className="text-3xl font-bold text-main-text mb-2" style={{ fontFamily: 'TTTsarsA, sans-serif' }}>{product.title}</h1>
+      <h1 className="text-3xl font-bold text-main-text mb-2" style={{ fontFamily: 'TTTsarsA, sans-serif' }}>{data.title}</h1>
       {/* SKU */}
-      <p className="text-gray-500 text-lg mb-2">SKU: {product.sku}</p>
+      <p className="text-gray-500 text-lg mb-2">SKU: {data.sku}</p>
       {/* Available Sizes */}
       <div>
         <h2 className="font-semibold text-main-text mb-1">Available Sizes</h2>
         {sizes.length > 0 ? (
           <ul className="flex flex-wrap gap-2">
-            {sizes.map((size: any) => (
+            {sizes.map((size) => (
               <li key={size.id} className="bg-secondary px-3 py-1 rounded-full text-main-text border border-separator text-sm cursor-pointer select-none">
-                {size.size_mm}
+                {size.attributes?.size_mm}
               </li>
             ))}
           </ul>
@@ -78,7 +42,7 @@ const ProductInfo: React.FC<ProductInfoProps> = ({ product }) => {
         <h2 className="font-semibold text-main-text mb-1">Available Thicknesses</h2>
         {thicknesses.length > 0 ? (
           <ul className="flex flex-wrap gap-2">
-            {thicknesses.map((thick: any, idx: number) => (
+            {thicknesses.map((thick, idx) => (
               <li key={thick || idx} className="bg-secondary px-3 py-1 rounded-full text-main-text border border-separator text-sm cursor-pointer select-none">
                 {thick}
               </li>

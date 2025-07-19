@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const benefits = [
   {
@@ -60,9 +61,11 @@ const AboutUsTeaser: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         {/* Image Column */}
         <div className="flex justify-center">
-          <img
+          <Image
             src="/about-teaser.jpg"
             alt="Minimalist tile texture or interior"
+            width={400}
+            height={400}
             className="rounded-2xl shadow-lg w-full max-w-md object-cover"
             loading="lazy"
           />

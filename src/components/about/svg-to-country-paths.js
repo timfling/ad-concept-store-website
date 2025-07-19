@@ -1,5 +1,5 @@
-const fs = require('fs');
-const { JSDOM } = require('jsdom');
+import fs from 'fs';
+import { JSDOM } from 'jsdom';
 
 // Read SVG file
 const svg = fs.readFileSync('./world-map.svg', 'utf8');

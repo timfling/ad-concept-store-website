@@ -4,48 +4,50 @@ import CategoryCard from "@/components/catalog/CategoryCard";
 import ProductCard from "@/components/products/ProductCard";
 import Breadcrumbs from "@/components/catalog/Breadcrumbs";
 import Image from "next/image";
+import { Product, Category } from '@/types/strapi';
 
 interface CatalogSlugPageProps {
   params: { slug: string[] };
 }
 
 // Helper to recursively fetch parent categories and build the full path
-async function getCategoryPath(category: any, allCategories: any[]): Promise<string[]> {
+async function getCategoryPath(category: Category, allCategories: Category[]): Promise<string[]> {
   const path: string[] = [];
   let current = category;
   while (current) {
-    path.unshift(current.slug);
-    if (!current.parent) break;
-    let parent = allCategories.find((cat) => cat.id === (current.parent.id || current.parent));
+    path.unshift(current.attributes.slug);
+    if (!current.attributes.parent) break;
+    let parent = allCategories.find((cat) => cat.id === (current.attributes.parent?.data?.id));
     if (!parent) {
-      const parentRes = await fetchAPI(`/categories?filters[id][$eq]=${current.parent.id || current.parent}`);
+      const parentRes = await fetchAPI(`/categories?filters[id][$eq]=${current.attributes.parent?.data?.id}`);
       parent = parentRes?.[0];
       if (parent) allCategories.push(parent);
     }
+    if (!parent) break; // Type guard: only assign if parent is defined
     current = parent;
   }
   return path;
 }
 
 // Helper to recursively render categories and products
-function RenderCategoryTree({ category, allCategories, parentPath }: { category: any, allCategories: any[], parentPath: string[] }) {
-  const children = category.children?.data || category.children || [];
-  const products = category.products?.data || category.products || [];
-  const currentPath = [...parentPath, category.slug];
+function RenderCategoryTree({ category, allCategories, parentPath }: { category: Category, allCategories: Category[], parentPath: string[] }) {
+  const children = category.attributes.children?.data || [];
+  const products = category.attributes.products?.data || [];
+  const currentPath = [...parentPath, category.attributes.slug];
 
   return (
     <div>
-      <h2 className="heading-font text-2xl font-bold mb-6 text-main-text">{category.name}</h2>
+      <h2 className="heading-font text-2xl font-bold mb-6 text-main-text">{category.attributes.name}</h2>
       {children.length > 0 ? (
         <div className="ml-4">
-          {children.map((child: any) => (
+          {children.map((child: Category) => (
             <RenderCategoryTree key={child.id} category={child} allCategories={allCategories} parentPath={currentPath} />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
-            products.map((product: any) => (
+            products.map((product: Product) => (
               <ProductCard key={product.id} product={product} categoryPath={currentPath} />
             ))
           ) : (
@@ -66,19 +68,19 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
     // Fetch all categories for this main product line, deeply populated
     const mainProductLines = await fetchAPI(`/main-product-lines?filters[slug][$eq]=${slugs[0]}&populate[categories][populate][children][populate]=*`);
     const mainProductLine = mainProductLines?.[0];
-    const allCategories = mainProductLine?.categories || [];
+    const allCategories = mainProductLine?.attributes?.categories || [];
     // Only root categories (no parent)
-    const rootCategories = allCategories.filter((cat: any) => !cat.parent);
+    const rootCategories = allCategories.filter((cat: Category) => !cat.attributes.parent);
     return (
       <div className="max-w-7xl mx-auto py-12 px-4">
         <Breadcrumbs slugs={slugs} />
-        <h1 className="heading-font text-4xl font-bold mb-10 text-main-text">{mainProductLine?.name || "Categories"}</h1>
+        <h1 className="heading-font text-4xl font-bold mb-10 text-main-text">{mainProductLine?.attributes?.name || "Categories"}</h1>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {rootCategories.map((cat: any) => (
+          {rootCategories.map((cat: Category) => (
             <CategoryCard
               key={cat.id}
-              title={cat.name}
-              url={`/catalog/${slugs[0]}/${cat.slug}`}
+              title={cat.attributes.name}
+              url={`/catalog/${slugs[0]}/${cat.attributes.slug}`}
             />
           ))}
         </div>
@@ -99,11 +101,11 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
     const product = productRes?.[0]?.attributes ? { id: productRes[0].id, ...productRes[0].attributes } : productRes?.[0];
     if (product) {
       // Inline product detail rendering (copied from product page)
-      const images = product.images?.data || product.images || [];
-      const sizes = product.sizes?.data || product.sizes || [];
-      const thicknesses = product.thicknesses?.data || product.thicknesses || [];
-      const technicalInfo = product.technicalInfo || product.technical_info || "";
-      const title = product.title || "Untitled";
+      const images = product.attributes?.images?.data || product.attributes?.images || [];
+      const sizes = product.attributes?.sizes?.data || product.attributes?.sizes || [];
+      const thicknesses = product.attributes?.thicknesses?.data || product.attributes?.thicknesses || [];
+      const technicalInfo = product.attributes?.technicalInfo || product.attributes?.technical_info || "";
+      const title = product.attributes?.title || "Untitled";
       const getImageUrl = (img: any) => {
         const url = img.attributes?.url || img.url;
         if (!url) return "";
@@ -115,7 +117,7 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
         <div className="max-w-7xl mx-auto py-12 px-4">
           <Breadcrumbs slugs={slugs.slice(0, -1)} />
           <h1 className="heading-font text-3xl font-bold text-main-text mb-2">{title}</h1>
-          <p className="text-accent text-lg mb-2">SKU: {product.sku}</p>
+          <p className="text-accent text-lg mb-2">SKU: {product.attributes?.sku}</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Gallery */}
             <div>
@@ -191,28 +193,28 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
     return <div className="max-w-7xl mx-auto py-12 px-4">Category or product not found.</div>;
   }
 
-  const children = category.children?.data || category.children || [];
-  const products = category.products?.data || category.products || [];
+  const children = category.attributes.children?.data || [];
+  const products = category.attributes.products?.data || [];
   const fullPath = slugs;
 
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
       <Breadcrumbs slugs={fullPath} />
-      <h1 className="heading-font text-4xl font-bold mb-10 text-main-text">{category.name}</h1>
+      <h1 className="heading-font text-4xl font-bold mb-10 text-main-text">{category.attributes.name}</h1>
       {children.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          {children.map((child: any) => (
+          {children.map((child: Category) => (
             <CategoryCard
               key={child.id}
-              title={child.name}
-              url={`/catalog/${[...fullPath, child.slug].join("/")}`}
+              title={child.attributes.name}
+              url={`/catalog/${[...fullPath, child.attributes.slug].join("/")}`}
             />
           ))}
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
-            products.map((product: any) => (
+            products.map((product: Product) => (
               <ProductCard key={product.id} product={product} categoryPath={fullPath} />
             ))
           ) : (

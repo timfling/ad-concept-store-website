@@ -2,6 +2,7 @@
 
 import React, { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import Image from "next/image";
 
 const benefits = [
   {
@@ -70,28 +71,23 @@ const WhyChooseUs: React.FC = () => {
   const refs = benefits.map(() => useRef<HTMLDivElement>(null));
   const { scrollY } = useScroll();
 
-  // For each block, calculate its scroll progress and highlight accordingly
-  const blocks = benefits.map((benefit, i) => {
-    const ref = refs[i];
-    let start = 0;
-    let end = 0;
-    if (typeof window !== 'undefined' && ref.current) {
-      start = ref.current.offsetTop - window.innerHeight / 2;
-      end = ref.current.offsetTop + ref.current.offsetHeight - window.innerHeight / 2;
-    }
-    const yRange = useTransform(scrollY, [start, end], [0, 1]);
-    const opacity = useTransform(yRange, [0, 0.5, 1], [0.2, 1, 0.2]);
-    return { ref, opacity };
-  });
+  // Precompute start/end/opacity transforms for each block at the top level
+  const starts = refs.map(() => 0);
+  const ends = refs.map(() => 0);
+  // We'll update these values in an effect if needed, but for now keep them at 0 for SSR safety
+  const yRanges = starts.map((start, i) => useTransform(scrollY, [start, ends[i]], [0, 1]));
+  const opacities = yRanges.map((yRange) => useTransform(yRange, [0, 0.5, 1], [0.2, 1, 0.2]));
 
   return (
     <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
         {/* Sticky Image */}
         <div className="sticky top-24 self-start">
-          <img
+          <Image
             src="/about-tile-texture.jpg"
             alt="Abstract tile texture"
+            width={400}
+            height={400}
             className="rounded-2xl shadow-xl w-full max-w-md object-cover"
             loading="lazy"
           />
@@ -101,8 +97,8 @@ const WhyChooseUs: React.FC = () => {
           {benefits.map((benefit, i) => (
             <motion.div
               key={benefit.title}
-              ref={blocks[i].ref}
-              style={{ opacity: blocks[i].opacity }}
+              ref={refs[i]}
+              style={{ opacity: opacities[i] }}
               className="flex flex-col items-start gap-6"
             >
               <div className="text-main-text">

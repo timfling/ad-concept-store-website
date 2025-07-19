@@ -1,16 +1,16 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { Product } from '@/types/strapi';
 
 interface ProductCardProps {
   product: any;
   categoryPath?: string[];
 }
 
-export default function ProductCard({ product, categoryPath }: ProductCardProps) {
-  // Support both flat and nested (attributes) structures for compatibility
-  const data = product.attributes ? product.attributes : product;
-  const images = data.images?.data || data.images || [];
+export default function ProductCard({ product, categoryPath }: { product: Product; categoryPath?: string[] }) {
+  const data = product.attributes;
+  const images = data.images?.data || [];
   const title = data.title || "Untitled";
   const sku = data.sku || "";
 
