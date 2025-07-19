@@ -3,12 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from '@/types/strapi';
 
-interface ProductCardProps {
-  product: any;
-  categoryPath?: string[];
-}
-
-export default function ProductCard({ product, categoryPath }: { product: Product; categoryPath?: string[] }) {
+export default function ProductCard({ product }: { product: Product }) {
   const data = product.attributes;
   const images = data.images?.data || [];
   const title = data.title || "Untitled";
@@ -19,10 +14,6 @@ export default function ProductCard({ product, categoryPath }: { product: Produc
     imageUrl = images[0].attributes.url.startsWith("http")
       ? images[0].attributes.url
       : `${process.env.NEXT_PUBLIC_STRAPI_API_URL?.replace(/\/api$/, "")}${images[0].attributes.url}`;
-  } else if (Array.isArray(images) && images[0]?.url) {
-    imageUrl = images[0].url.startsWith("http")
-      ? images[0].url
-      : `${process.env.NEXT_PUBLIC_STRAPI_API_URL?.replace(/\/api$/, "")}${images[0].url}`;
   }
 
   const productLink = `/product/${sku}`;

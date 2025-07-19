@@ -67,19 +67,24 @@ const benefits = [
   },
 ];
 
-const WhyChooseUs: React.FC = () => {
-  const refs = benefits.map(() => useRef<HTMLDivElement>(null));
-  const { scrollY } = useScroll();
+export default function WhyChooseUs() {
+  // All hooks at the top level
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start'],
+  });
 
-  // Precompute start/end/opacity transforms for each block at the top level
-  const starts = refs.map(() => 0);
-  const ends = refs.map(() => 0);
-  // We'll update these values in an effect if needed, but for now keep them at 0 for SSR safety
-  const yRanges = starts.map((start, i) => useTransform(scrollY, [start, ends[i]], [0, 1]));
-  const opacities = yRanges.map((yRange) => useTransform(yRange, [0, 0.5, 1], [0.2, 1, 0.2]));
+  // Create one opacity transform per benefit
+  const opacities = [
+    useTransform(scrollYProgress, [0, 0.15, 0.3], [0.2, 1, 0.2]),
+    useTransform(scrollYProgress, [0.25, 0.4, 0.55], [0.2, 1, 0.2]),
+    useTransform(scrollYProgress, [0.5, 0.65, 0.8], [0.2, 1, 0.2]),
+    useTransform(scrollYProgress, [0.75, 0.9, 1], [0.2, 1, 0.2]),
+  ];
 
   return (
-    <section className="py-24 bg-white">
+    <section ref={sectionRef} className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-16 items-start">
         {/* Sticky Image */}
         <div className="sticky top-24 self-start">
@@ -97,7 +102,6 @@ const WhyChooseUs: React.FC = () => {
           {benefits.map((benefit, i) => (
             <motion.div
               key={benefit.title}
-              ref={refs[i]}
               style={{ opacity: opacities[i] }}
               className="flex flex-col items-start gap-6"
             >
@@ -116,6 +120,4 @@ const WhyChooseUs: React.FC = () => {
       </div>
     </section>
   );
-};
-
-export default WhyChooseUs; 
+} 

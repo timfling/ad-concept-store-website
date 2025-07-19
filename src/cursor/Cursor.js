@@ -1,5 +1,5 @@
 'use client';
-import { useContext, useState, useRef, useEffect } from 'react';
+import { useContext, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { transparentize } from 'polished';
 

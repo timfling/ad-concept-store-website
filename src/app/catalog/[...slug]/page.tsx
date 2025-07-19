@@ -10,25 +10,6 @@ interface CatalogSlugPageProps {
   params: { slug: string[] };
 }
 
-// Helper to recursively fetch parent categories and build the full path
-async function getCategoryPath(category: Category, allCategories: Category[]): Promise<string[]> {
-  const path: string[] = [];
-  let current = category;
-  while (current) {
-    path.unshift(current.attributes.slug);
-    if (!current.attributes.parent) break;
-    let parent = allCategories.find((cat) => cat.id === (current.attributes.parent?.data?.id));
-    if (!parent) {
-      const parentRes = await fetchAPI(`/categories?filters[id][$eq]=${current.attributes.parent?.data?.id}`);
-      parent = parentRes?.[0];
-      if (parent) allCategories.push(parent);
-    }
-    if (!parent) break; // Type guard: only assign if parent is defined
-    current = parent;
-  }
-  return path;
-}
-
 // Helper to recursively render categories and products
 function RenderCategoryTree({ category, allCategories, parentPath }: { category: Category, allCategories: Category[], parentPath: string[] }) {
   const children = category.attributes.children?.data || [];
@@ -48,7 +29,7 @@ function RenderCategoryTree({ category, allCategories, parentPath }: { category:
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
             products.map((product: Product) => (
-              <ProductCard key={product.id} product={product} categoryPath={currentPath} />
+              <ProductCard key={product.id} product={product} />
             ))
           ) : (
             <p className="text-accent col-span-3">No products found.</p>
@@ -68,7 +49,7 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
     // Fetch all categories for this main product line, deeply populated
     const mainProductLines = await fetchAPI(`/main-product-lines?filters[slug][$eq]=${slugs[0]}&populate[categories][populate][children][populate]=*`);
     const mainProductLine = mainProductLines?.[0];
-    const allCategories = mainProductLine?.attributes?.categories || [];
+    const allCategories: Category[] = mainProductLine?.attributes?.categories || [];
     // Only root categories (no parent)
     const rootCategories = allCategories.filter((cat: Category) => !cat.attributes.parent);
     return (
@@ -93,21 +74,21 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
   const res = await fetchAPI(
     `/categories?filters[slug][$eq]=${currentSlug}&populate[children][populate]=*&populate[products][populate]=*`
   );
-  const category = res?.[0];
+  const category: Category | undefined = res?.[0];
 
   if (!category) {
     // Try to fetch product by SKU if no category found
     const productRes = await fetchAPI(`/products?filters[sku][$eq]=${currentSlug}&populate=*`);
-    const product = productRes?.[0]?.attributes ? { id: productRes[0].id, ...productRes[0].attributes } : productRes?.[0];
+    const product: Product | undefined = productRes?.[0];
     if (product) {
       // Inline product detail rendering (copied from product page)
-      const images = product.attributes?.images?.data || product.attributes?.images || [];
-      const sizes = product.attributes?.sizes?.data || product.attributes?.sizes || [];
-      const thicknesses = product.attributes?.thicknesses?.data || product.attributes?.thicknesses || [];
-      const technicalInfo = product.attributes?.technicalInfo || product.attributes?.technical_info || "";
+      const images = product.attributes?.images?.data || [];
+      const sizes = product.attributes?.sizes?.data || [];
+      // Remove thicknesses logic, as ProductAttributes does not define it
+      const technicalInfo = product.attributes?.technical_info || "";
       const title = product.attributes?.title || "Untitled";
-      const getImageUrl = (img: any) => {
-        const url = img.attributes?.url || img.url;
+      const getImageUrl = (img: Product["attributes"]["images"]["data"][number]) => {
+        const url = img.attributes?.url;
         if (!url) return "";
         return url.startsWith("http")
           ? url
@@ -134,7 +115,7 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
                     />
                   </div>
                   <div className="flex gap-2 mt-2">
-                    {images.map((img: any, idx: number) => (
+                    {images.map((img, idx) => (
                       <div key={img.id || idx} className="w-20 h-20 relative rounded border border-separator overflow-hidden">
                         <Image
                           src={getImageUrl(img)}
@@ -163,9 +144,9 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
                 <h2 className="font-semibold text-main-text mb-1">Available Sizes</h2>
                 {sizes.length > 0 ? (
                   <ul className="flex flex-wrap gap-2">
-                    {sizes.map((size: any) => (
+                    {sizes.map((size) => (
                       <li key={size.id} className="bg-secondary px-3 py-1 rounded text-main-text border border-separator text-sm">
-                        {size.attributes?.name || size.name}
+                        {size.attributes?.size_mm}
                       </li>
                     ))}
                   </ul>
@@ -173,18 +154,7 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
                   <span className="text-accent text-sm">No sizes available</span>
                 )}
               </div>
-              {thicknesses.length > 0 && (
-                <div>
-                  <h2 className="font-semibold text-main-text mb-1">Available Thicknesses</h2>
-                  <ul className="flex flex-wrap gap-2">
-                    {thicknesses.map((thick: any) => (
-                      <li key={thick.id} className="bg-secondary px-3 py-1 rounded text-main-text border border-separator text-sm">
-                        {thick.attributes?.name || thick.name}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              {/* Removed thicknesses section as ProductAttributes does not define it */}
             </div>
           </div>
         </div>
@@ -215,7 +185,7 @@ export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
           {products.length > 0 ? (
             products.map((product: Product) => (
-              <ProductCard key={product.id} product={product} categoryPath={fullPath} />
+              <ProductCard key={product.id} product={product} />
             ))
           ) : (
             <p className="text-accent col-span-3">No products found.</p>
