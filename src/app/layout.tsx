@@ -1,15 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
+import { AnimatePresence } from "framer-motion";
+import localFont from "next/font/local";
+import { Providers } from "@/components/providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const zenAntiqueSoft = localFont({
+  src: [
+    {
+      path: "../fonts/ZenAntiqueSoft-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-zen-antique-soft",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const tildaSans = localFont({
+  src: [
+    {
+      path: "../fonts/TildaSans-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-tilda-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -23,11 +41,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html lang="en" className={`${zenAntiqueSoft.variable} ${tildaSans.variable}`}>
+      <body className="antialiased">
+        <Providers>
+          <Header />
+          <AnimatePresence mode="wait">
+            <main className="bg-[var(--color-background)]">{children}</main>
+          </AnimatePresence>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
