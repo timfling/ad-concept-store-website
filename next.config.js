@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+const nextConfig = {
   images: {
     remotePatterns: [
       {
@@ -11,7 +9,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'ad-concept-store-cms.onrender.com', // Replace with your actual Render hostname if different
+        hostname: 'ad-concept-store-cms.onrender.com',
         port: '',
         pathname: '/uploads/**',
       }
