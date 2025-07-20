@@ -3,7 +3,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import WithHover from "@/cursor/WithHover";
 
 const HeroSection: React.FC = () => {
   return (
@@ -24,14 +23,12 @@ const HeroSection: React.FC = () => {
         <p className="heading-font text-lg md:text-2xl text-main-text mb-8 drop-shadow-md">
           International Frontier Design Concept
         </p>
-        <WithHover type="block">
-  <Link
-    href="/catalog"
-    className="inline-block border border-white text-white px-8 py-3 rounded-full font-semibold transition-colors duration-300 hover:bg-white hover:text-black"
-  >
-    VIEW CATALOG
-  </Link>
-</WithHover>
+        <Link
+          href="/catalog"
+          className="inline-block border border-white text-white px-8 py-3 rounded-full font-semibold transition-colors duration-300 hover:bg-white hover:text-black"
+        >
+          VIEW CATALOG
+        </Link>
       </motion.div>
 
       {/* Scroll Down Button */}
