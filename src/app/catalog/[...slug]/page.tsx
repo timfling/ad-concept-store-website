@@ -9,7 +9,6 @@ import { Product, Category } from '@/types/strapi';
 // New Next.js PageProps type
 type CatalogSlugPageProps = {
   params: { slug: string[] };
-  searchParams: { [key: string]: string | string[] | undefined };
 };
 
 // Helper to recursively render categories and products
@@ -42,7 +41,7 @@ function RenderCategoryTree({ category, allCategories, parentPath }: { category:
   );
 }
 
-export default async function CatalogSlugPage({ params, searchParams }: CatalogSlugPageProps) {
+export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) {
   const { slug } = params;
   const slugs = Array.isArray(slug) ? slug : [slug];
 
@@ -79,90 +78,7 @@ export default async function CatalogSlugPage({ params, searchParams }: CatalogS
   const category: Category | undefined = res?.[0];
 
   if (!category) {
-    // Try to fetch product by SKU if no category found
-    const productRes = await fetchAPI(`/products?filters[sku][$eq]=${currentSlug}&populate=*`);
-    const product: Product | undefined = productRes?.[0];
-    if (product) {
-      // Inline product detail rendering (copied from product page)
-      const images = product.attributes?.images?.data || [];
-      const sizes = product.attributes?.sizes?.data || [];
-      // Remove thicknesses logic, as ProductAttributes does not define it
-      const technicalInfo = product.attributes?.technical_info || "";
-      const title = product.attributes?.title || "Untitled";
-      const getImageUrl = (img: Product["attributes"]["images"]["data"][number]) => {
-        const url = img.attributes?.url;
-        if (!url) return "";
-        return url.startsWith("http")
-          ? url
-          : `${process.env.NEXT_PUBLIC_STRAPI_API_URL?.replace(/\/api$/, "")}${url}`;
-      };
-      return (
-        <div className="max-w-7xl mx-auto py-12 px-4">
-          <Breadcrumbs slugs={slugs.slice(0, -1)} />
-          <h1 className="heading-font text-3xl font-bold text-main-text mb-2">{title}</h1>
-          <p className="text-accent text-lg mb-2">SKU: {product.attributes?.sku}</p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {/* Gallery */}
-            <div>
-              {images.length > 0 ? (
-                <div className="flex flex-col gap-4">
-                  <div className="relative w-full h-96 rounded-lg overflow-hidden border border-separator">
-                    <Image
-                      src={getImageUrl(images[0])}
-                      alt={title}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      priority
-                    />
-                  </div>
-                  <div className="flex gap-2 mt-2">
-                    {images.map((img, idx) => (
-                      <div key={img.id || idx} className="w-20 h-20 relative rounded border border-separator overflow-hidden">
-                        <Image
-                          src={getImageUrl(img)}
-                          alt={title}
-                          fill
-                          className="object-cover"
-                          sizes="80px"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ) : (
-                <div className="w-full h-96 bg-secondary flex items-center justify-center text-accent rounded-lg border border-separator">No Image</div>
-              )}
-            </div>
-            {/* Product Info */}
-            <div className="flex flex-col gap-6">
-              {technicalInfo && (
-                <div>
-                  <h2 className="font-semibold text-main-text mb-1">Technical Info</h2>
-                  <p className="text-accent whitespace-pre-line">{technicalInfo}</p>
-                </div>
-              )}
-              <div>
-                <h2 className="font-semibold text-main-text mb-1">Available Sizes</h2>
-                {sizes.length > 0 ? (
-                  <ul className="flex flex-wrap gap-2">
-                    {sizes.map((size) => (
-                      <li key={size.id} className="bg-secondary px-3 py-1 rounded text-main-text border border-separator text-sm">
-                        {size.attributes?.size_mm}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <span className="text-accent text-sm">No sizes available</span>
-                )}
-              </div>
-              {/* Removed thicknesses section as ProductAttributes does not define it */}
-            </div>
-          </div>
-        </div>
-      );
-    }
-    return <div className="max-w-7xl mx-auto py-12 px-4">Category or product not found.</div>;
+    return <div className="max-w-7xl mx-auto py-12 px-4">Category not found.</div>;
   }
 
   const children = category.attributes.children?.data || [];
