@@ -65,4 +65,8 @@ export interface MainProductLineAttributes {
   image: StrapiSingleRelation<StrapiImage>;
   categories: StrapiRelation<Category>;
 }
-export type MainProductLine = StrapiBase & { attributes: MainProductLineAttributes }; 
+export type MainProductLine = StrapiBase & { attributes: MainProductLineAttributes };
+
+// Add or ensure these exports exist
+export type ProductGalleryImage = StrapiImage;
+export type ProductInfoProduct = Product; 

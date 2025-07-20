@@ -1,7 +1,8 @@
 'use client';
 import React from 'react';
-import ProductGallery, { ProductGalleryImage } from './ProductGallery';
-import ProductInfo, { ProductInfoProduct } from './ProductInfo';
+import ProductGallery from './ProductGallery';
+import ProductInfo from './ProductInfo';
+import { ProductGalleryImage, ProductInfoProduct } from '@/types/strapi';
 import GoBackButton from '../ui/GoBackButton';
 import Breadcrumbs from '../catalog/Breadcrumbs';
 
@@ -12,7 +13,7 @@ export interface ProductClientPageProps {
 
 const ProductClientPage: React.FC<ProductClientPageProps> = ({ product, slugs }) => {
   // For gallery, support both images.data and images
-  const images: ProductGalleryImage[] = (product.images?.data || product.images || []) as ProductGalleryImage[];
+  const images: ProductGalleryImage[] = (product.attributes.images?.data || []) as ProductGalleryImage[];
   return (
     <div className="max-w-7xl mx-auto py-12 px-4">
       <Breadcrumbs slugs={slugs} />
