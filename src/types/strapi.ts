@@ -57,4 +57,12 @@ export interface ProductAttributes {
   collections: StrapiRelation<Collection>;
   category: StrapiSingleRelation<Category>;
 }
-export type Product = StrapiBase & { attributes: ProductAttributes }; 
+export type Product = StrapiBase & { attributes: ProductAttributes };
+
+export interface MainProductLineAttributes {
+  name: string;
+  slug: string;
+  image: StrapiSingleRelation<StrapiImage>;
+  categories: StrapiRelation<Category>;
+}
+export type MainProductLine = StrapiBase & { attributes: MainProductLineAttributes }; 

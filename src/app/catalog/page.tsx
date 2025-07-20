@@ -1,8 +1,7 @@
 import React from "react";
 import { fetchAPI } from "@/lib/strapi";
 import CategoryCard from "@/components/catalog/CategoryCard";
-
-type MainProductLine = { id: number; attributes: { name: string; slug: string; image: any } };
+import { MainProductLine } from "@/types/strapi";
 
 export default async function CatalogPage() {
   // Fetch all main product lines (no image field to populate)
