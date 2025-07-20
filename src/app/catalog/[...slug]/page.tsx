@@ -6,9 +6,11 @@ import Breadcrumbs from "@/components/catalog/Breadcrumbs";
 import Image from "next/image";
 import { Product, Category } from '@/types/strapi';
 
-interface CatalogSlugPageProps {
+// New Next.js PageProps type
+type CatalogSlugPageProps = {
   params: { slug: string[] };
-}
+  searchParams: { [key: string]: string | string[] | undefined };
+};
 
 // Helper to recursively render categories and products
 function RenderCategoryTree({ category, allCategories, parentPath }: { category: Category, allCategories: Category[], parentPath: string[] }) {
@@ -40,7 +42,7 @@ function RenderCategoryTree({ category, allCategories, parentPath }: { category:
   );
 }
 
-export default async function CatalogSlugPage({ params }: CatalogSlugPageProps) {
+export default async function CatalogSlugPage({ params, searchParams }: CatalogSlugPageProps) {
   const { slug } = params;
   const slugs = Array.isArray(slug) ? slug : [slug];
 
